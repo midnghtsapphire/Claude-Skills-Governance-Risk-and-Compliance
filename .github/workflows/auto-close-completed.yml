@@ -1,0 +1,26 @@
+name: Auto-Close Completed Issues
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+
+jobs:
+  close-completed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close completed issues
+        if: contains(github.event.issue.body, 'completed') || contains(github.event.issue.labels.*.name, 'completed')
+        run: |
+          gh issue close ${{ github.event.issue.number }} --comment "Marked complete - auto-closed"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Close merged PRs linked issues
+        if: github.event.pull_request.merged == true
+        run: |
+          gh issue close ${{ github.event.pull_request.number }} --comment "PR merged - auto-closed"
+        env:
+          GH_TOKEN: ${{ github.token }}
